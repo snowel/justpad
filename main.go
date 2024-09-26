@@ -56,6 +56,7 @@ func makeNote(tags string) note {
 
 
 func main() {
+	id := flag.String("id", "", "ID/IDs of (a) note(s).")
 	tags := flag.String("t", "", "A list of tags.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
 	
@@ -70,18 +71,29 @@ func main() {
 		return
 	} // quick note
 
+
 	if len(args) == 1 {
-	switch args[0] {
-	case "init-db":
-		initDB(*dbPath)
-	case "new":
-		db := openDB(*dbPath)
-		defer db.Close()
-		note := makeNote(*tags)
-		saveNewNote(&note, db)
-		return
-	case "debug":
-		fmt.Println(*dbPath)
-		}
+
+	// TODO Can I open and defer DB here? Technically, but will be funky once we have alt UIs...
+		switch args[0] {
+		case "init-db":
+			initDB(*dbPath)
+		case "new":
+			db := openDB(*dbPath)
+			defer db.Close()
+			note := makeNote(*tags)
+			saveNewNote(&note, db)
+			return
+		case "search":
+			if *id != "" {
+				db := openDB(*dbPath)
+				defer db.Close()
+				n := searchByIDs(*id, db)
+				fmt.Println(n)
+				return
+			}
+		case "debug":
+			fmt.Println(*dbPath)
+			}
 	}
 }
