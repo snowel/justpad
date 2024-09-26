@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strings"
 	"slices"
 
 	"database/sql"
@@ -20,11 +19,10 @@ func searchByID(id string, db *sql.DB) note {
 	return n
 }
 
-func searchByIDs(ids string, db *sql.DB) []note {
-	each := strings.Fields(ids)
-	notes := make([]note, len(each))
+func searchByIDs(ids []string, db *sql.DB) []note {
+	notes := make([]note, len(ids))
 
-	for i, v := range each {
+	for i, v := range ids {
 		n := searchByID(v, db)
 		notes[i] = n
 	}
@@ -32,7 +30,8 @@ func searchByIDs(ids string, db *sql.DB) []note {
 	return notes
 }
 
-func searchByTag(tag string, db *sql.DB) []note {
+// Gets a list of unique notes(ids) based on a single tag
+func searchByTag(tag string, db *sql.DB) []string {
 	noteRows, err := db.Query("SELECT note FROM tagged WHERE tag = ?", tag)
 	if err != nil {
 		log.Fatal(err)
@@ -53,14 +52,19 @@ func searchByTag(tag string, db *sql.DB) []note {
 		}
 	}
 
-	//TODO This is a copy of searchByIDs, but using searhc by IDs woudl require converting to a string, then back to an array
-	// One possible solution is to make the function take an array, then use string.Fileds differtly in the main funtion call.
-	notes := make([]note, len(list))
+	return list
+}
 
-	for i, v := range list {
-		n := searchByID(v, db)
-		notes[i] = n
+func searchByTags(tags []string, db *sql.DB) []note {
+	list := make([]string, 0)
+	for _, v := range tags {
+		tmp := searchByTag(v, db)
+		for _, id := range tmp { // TODO Ugly and probaly slower than it needs to be. Replace arrays with sets (i.e. stringset)
+			if !slices.Contains(list, id) {
+				list = append(list, id)
+			}
+		}
 	}
 
-	return notes
+	return searchByIDs(list, db)
 }
