@@ -90,6 +90,7 @@ func main() {
 				defer db.Close()
 				n := searchByIDs(*id, db)
 				fmt.Println(n)
+				printNoteList(n)
 				return
 			}
 		case "debug":
