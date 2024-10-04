@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"github.com/oklog/ulid/v2"
 	"os"
 	"os/exec"
@@ -86,22 +85,11 @@ func main() {
 			saveNewNote(&note, db)
 			return
 		case "search":
-			if *id != "" {
-				db := openDB(*dbPath)
-				defer db.Close()
-				n := searchByIDs(strings.Fields(*id), db)
-				fmt.Println("ids earch")
-				printNoteList(n)
-				return
-			}
-			if *tags != "" {
-				db := openDB(*dbPath)
-				defer db.Close()
-				n := searchByTags(strings.Fields(*tags), db)
-				fmt.Println("Tags search")
-				printNoteList(n)
-				return
-			}
+			n := searchHierarchy(*id, *tags, *dbPath)
+			printNoteList(n)
+		case "edit":
+			n := searchHierarchy(*id, *tags, *dbPath)
+			printNoteList(n)
 		case "debug":
 			fmt.Println(*dbPath)
 			}
