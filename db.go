@@ -87,7 +87,7 @@ func insertTagRelation(note, tag string, db *sql.DB) {
 	dbQuery(db, q)
 
 	// Inser relation
-	q = fmt.Sprintf("INSERT INTO tagged SELECT '%s', '%s' WHERE NOT EXISTS (SELECT 1 FROM tagged WHERE note = '%s' AND tag = '%s');", note, tag, note, tag)
+	q = fmt.Sprintf("INSERT INTO tagged SELECT '%s', '%s' WHERE NOT EXISTS (SELECT 1 FROM tagged WHERE note = '%s' AND tag = '%s');", tag, note, note, tag)
 	dbQuery(db, q)
 }
 

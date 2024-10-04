@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"github.com/oklog/ulid/v2"
 	"os"
 	"os/exec"
@@ -56,7 +57,7 @@ func makeNote(tags string) note {
 
 
 func main() {
-	id := flag.String("id", "", "ID/IDs of (a) note(s).")
+	id := flag.String("id", "", "A list of note IDs.")
 	tags := flag.String("t", "", "A list of tags.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
 	
@@ -88,7 +89,14 @@ func main() {
 			if *id != "" {
 				db := openDB(*dbPath)
 				defer db.Close()
-				n := searchByIDs(*id, db)
+				n := searchByIDs(strings.Fields(*id), db)
+				fmt.Println(n)
+				return
+			}
+			if *tags != "" {
+				db := openDB(*dbPath)
+				defer db.Close()
+				n := searchByTags(strings.Fields(*tags), db)
 				fmt.Println(n)
 				printNoteList(n)
 				return

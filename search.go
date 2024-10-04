@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"strings"
+	"slices"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -19,14 +19,52 @@ func searchByID(id string, db *sql.DB) note {
 	return n
 }
 
-func searchByIDs(ids string, db *sql.DB) []note {
-	each := strings.Fields(ids)
-	notes := make([]note, len(each))
+func searchByIDs(ids []string, db *sql.DB) []note {
+	notes := make([]note, len(ids))
 
-	for i, v := range each {
+	for i, v := range ids {
 		n := searchByID(v, db)
 		notes[i] = n
 	}
 
 	return notes
+}
+
+// Gets a list of unique notes(ids) based on a single tag
+func searchByTag(tag string, db *sql.DB) []string {
+	noteRows, err := db.Query("SELECT note FROM tagged WHERE tag = ?", tag)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer noteRows.Close()
+
+	list := make([]string, 0)
+
+	for noteRows.Next() {
+		
+		var id string
+		if err := noteRows.Scan(&id); err != nil {
+			log.Print(err)
+		}
+
+		if !slices.Contains(list, id) {
+			list = append(list, id)
+		}
+	}
+
+	return list
+}
+
+func searchByTags(tags []string, db *sql.DB) []note {
+	list := make([]string, 0)
+	for _, v := range tags {
+		tmp := searchByTag(v, db)
+		for _, id := range tmp { // TODO Ugly and probaly slower than it needs to be. Replace arrays with sets (i.e. stringset)
+			if !slices.Contains(list, id) {
+				list = append(list, id)
+			}
+		}
+	}
+
+	return searchByIDs(list, db)
 }
