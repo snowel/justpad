@@ -79,10 +79,8 @@ func saveNewNote(note *note, db *sql.DB) {
 }
 
 func saveNoteUpdate(note *note, db *sql.DB) {
-	_, err := db.Exec("UPDATE notes SET body = '?', modified = ? WHERE id = '?';", note.body, note.modified, note.id)
-	if err != nil {
-		log.Fatal(err)
-	}
+	query := fmt.Sprintf("UPDATE notes SET body = '%s', modified = %d WHERE id = '%s';", note.body, note.modified, note.id)
+	dbQuery(db, query)
 	updateTagRelations(note.id, note.tags, db)
 }
 
