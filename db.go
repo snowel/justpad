@@ -64,7 +64,10 @@ func initDB(path string) {
 
 	Upon update - create a column of flags, set the flag on the opperating note to 0, then which each relation being updated, set the flag to 1, then delet all the relations with the flag still on 0
 	Uppon update - a temporary table cna be created, to store the added taggs upons updating 
-*/
+
+
+	TODO - SQL typed date and time for searching and sorting?
+	*/
 
 func saveNewNote(note *note, db *sql.DB) {
 	// insert
@@ -72,15 +75,19 @@ func saveNewNote(note *note, db *sql.DB) {
 	// TODO Escaping body text, as an SQL injection could do something, maybe?
 	dbQuery(db, query)
 	// For each tag in the array insertTagRelation
-	for _, tag := range note.tags {
-		insertTagRelation(note.id, tag, db)
-	}
-
+	insertTagRelations(note.id, note.tags, db)
 }
 
+func saveNoteUpdate(note *note, db *sql.DB) {
+	_, err := db.Exec("UPDATE notes SET body = '?', modified = ? WHERE id = '?';", note.body, note.modified, note.id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	updateTagRelations(note.id, note.tags, db)
+}
 
 func insertTagRelation(note, tag string, db *sql.DB) {
-	// TODO performace check on returning the tag vs executing the query to create the tag
+	// TODO performance check on returning the tag vs executing the query to create the tag
 
 	// Create tag
 	q := fmt.Sprintf("INSERT INTO tags SELECT '%s', '', '' WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = '%s');", tag, tag)
@@ -89,6 +96,40 @@ func insertTagRelation(note, tag string, db *sql.DB) {
 	// Inser relation
 	q = fmt.Sprintf("INSERT INTO tagged SELECT '%s', '%s' WHERE NOT EXISTS (SELECT 1 FROM tagged WHERE note = '%s' AND tag = '%s');", tag, note, note, tag)
 	dbQuery(db, q)
+}
+
+func insertTagRelations(note string, tags []string, db *sql.DB) {
+	for _, tag := range tags {
+		insertTagRelation(note, tag, db)
+	}
+}
+
+func removeTagRelation(note, tag string, db *sql.DB) {
+	_, err := db.Query("DELETE FROM tagged WHERE tag = '?' AND note = '?';", tag, note)
+	if err != nil {
+			log.Fatal(err)
+	}
+}
+
+func removeTagRelations(note string, tags []string, db *sql.DB) {
+	for _, tag := range tags {
+		removeTagRelation(note, tag, db)
+	}
+}
+
+
+func updateTagRelations(note string, newTags []string, db *sql.DB) {
+	// Search the DB for all the tags currently associated to the note
+	oldTags := searchForTags(note, db)
+
+	// Compare the tags twice
+	// old tags - new tags =  tags to be removed
+	delTags := boolDiff(newTags, oldTags)
+	removeTagRelations(note, delTags, db)
+	// TODO - does it create a measurable performace chance to delte first?
+	// new tags - old tags already in the db = tags to be added
+	addTags := boolDiff(newTags, oldTags)
+	insertTagRelations(note, addTags, db)
 }
 
 // Open and return a database

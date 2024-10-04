@@ -4,7 +4,6 @@ import (
 	"log"
 	"slices"
 	"strings"
-	"fmt"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -18,14 +17,12 @@ func searchHierarchy(id, tags, dbPath string) []note {
 		db := openDB(dbPath)
 		defer db.Close()
 		n := searchByIDs(strings.Fields(id), db)
-		fmt.Println("IDs earch")
 		return n
 	}
 	if tags != "" {
 		db := openDB(dbPath)
 		defer db.Close()
 		n := searchByTags(strings.Fields(tags), db)
-		fmt.Println("Tags search")
 		return n
 	}
 	return make([]note, 0)
@@ -39,7 +36,7 @@ func searchByID(id string, db *sql.DB) note {
 		log.Fatal(err)
 	}
 
-	n.tags = pullTags(n.id, db)
+	n.tags = searchForTags(n.id, db)
 
 	return n
 }
@@ -95,7 +92,7 @@ func searchByTags(tags []string, db *sql.DB) []note {
 }
 
 // For a note ID, give the list of tags it is tagged with in the databasse
-func pullTags(id string, db *sql.DB) []string {
+func searchForTags(id string, db *sql.DB) []string {
 	taggedRows, err := db.Query("SELECT tag FROM tagged WHERE note = ?", id)
 	if err != nil {
 		log.Fatal(err)

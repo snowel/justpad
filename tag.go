@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"fmt"
+	"slices"
 )
 
 var TagReservedCharacters = []string{";", "!", "^", "@", "*", "{", "}", "=", "|", "\\"}
@@ -39,3 +40,15 @@ func validateTags(tags string) []string {
 
 	return all
 }
+
+
+// Boolean difference
+func boolDiff(first, second []string) []string {
+	res := make([]string, 0)
+	for _, v := range first {//TODO There is certainly a cuter, and faster, way to do this
+		if !slices.Contains(second, v) {
+			res = append(res, v)
+		}
+	}
+	return res
+} 
