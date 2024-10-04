@@ -16,6 +16,8 @@ func searchByID(id string, db *sql.DB) note {
 		log.Fatal(err)
 	}
 
+	n.tags = pullTags(n.id, db)
+
 	return n
 }
 
@@ -67,4 +69,25 @@ func searchByTags(tags []string, db *sql.DB) []note {
 	}
 
 	return searchByIDs(list, db)
+}
+
+// For a note ID, give the list of tags it is tagged with in the databasse
+func pullTags(id string, db *sql.DB) []string {
+	taggedRows, err := db.Query("SELECT tag FROM tagged WHERE note = ?", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer taggedRows.Close()
+
+	list := make([]string, 0)
+
+	for taggedRows.Next() {
+		
+		var tag string
+		if err := taggedRows.Scan(&tag); err != nil {
+			log.Print(err)
+		}
+		list = append(list, tag)
+	}
+	return list
 }

@@ -90,14 +90,15 @@ func main() {
 				db := openDB(*dbPath)
 				defer db.Close()
 				n := searchByIDs(strings.Fields(*id), db)
-				fmt.Println(n)
+				fmt.Println("ids earch")
+				printNoteList(n)
 				return
 			}
 			if *tags != "" {
 				db := openDB(*dbPath)
 				defer db.Close()
 				n := searchByTags(strings.Fields(*tags), db)
-				fmt.Println(n)
+				fmt.Println("Tags search")
 				printNoteList(n)
 				return
 			}
