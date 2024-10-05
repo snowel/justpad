@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"log"
-	"fmt"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -71,16 +70,16 @@ func initDB(path string) {
 
 func saveNewNote(note *note, db *sql.DB) {
 	// insert
-	query := fmt. Sprintf("INSERT INTO notes SELECT '%s', '%s', %d, %d WHERE NOT EXISTS (SELECT 1 FROM notes WHERE id = '%s');", note.id, note.body, note.created, note.modified, note.id)
-	// TODO Escaping body text, as an SQL injection could do something, maybe?
-	dbQuery(db, query)
+	_, err := db.Exec("INSERT INTO notes SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notes WHERE id = ?);", note.id, note.body, note.created, note.modified, note.id)
+	if err != nil { log.Fatal(err) }
 	// For each tag in the array insertTagRelation
 	insertTagRelations(note.id, note.tags, db)
 }
 
 func saveNoteUpdate(note *note, db *sql.DB) {
-	query := fmt.Sprintf("UPDATE notes SET body = '%s', modified = %d WHERE id = '%s';", note.body, note.modified, note.id)
-	dbQuery(db, query)
+	_, err := db.Exec("UPDATE notes SET body = ?, modified = ? WHERE id = ?;", note.body, note.modified, note.id)
+	if err != nil { log.Fatal(err) }
+
 	updateTagRelations(note.id, note.tags, db)
 }
 
@@ -88,12 +87,12 @@ func insertTagRelation(note, tag string, db *sql.DB) {
 	// TODO performance check on returning the tag vs executing the query to create the tag
 
 	// Create tag
-	q := fmt.Sprintf("INSERT INTO tags SELECT '%s', '', '' WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = '%s');", tag, tag)
-	dbQuery(db, q)
+	_, err := db.Exec("INSERT INTO tags SELECT ?, '', '' WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ?);", tag, tag)
+	if err != nil { log.Fatal( err ) }
 
 	// Inser relation
-	q = fmt.Sprintf("INSERT INTO tagged SELECT '%s', '%s' WHERE NOT EXISTS (SELECT 1 FROM tagged WHERE note = '%s' AND tag = '%s');", tag, note, note, tag)
-	dbQuery(db, q)
+	_, err = db.Exec("INSERT INTO tagged SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM tagged WHERE note = ? AND tag = ?);", tag, note, note, tag)
+	if err != nil { log.Fatal( err ) }
 }
 
 func insertTagRelations(note string, tags []string, db *sql.DB) {
@@ -104,9 +103,7 @@ func insertTagRelations(note string, tags []string, db *sql.DB) {
 
 func removeTagRelation(note, tag string, db *sql.DB) {
 	_, err := db.Exec("DELETE FROM tagged WHERE tag = ? AND note = ?;", tag, note)
-	if err != nil {
-			log.Fatal(err)
-	}
+	if err != nil { log.Fatal(err) }
 }
 
 func removeTagRelations(note string, tags []string, db *sql.DB) {
@@ -123,13 +120,11 @@ func updateTagRelations(note string, newTags []string, db *sql.DB) {
 	// Compare the tags twice
 	// old tags - new tags =  tags to be removed
 	delTags := boolDiff(oldTags, newTags)
-	fmt.Println(delTags)
 	removeTagRelations(note, delTags, db)
 
 	// TODO - discovery question - does it create a measurable performace chance to delte first?
 	// new tags - old tags already in the db = tags to be added
 	addTags := boolDiff(newTags, oldTags)
-	fmt.Println(addTags)
 	insertTagRelations(note, addTags, db)
 }
 
@@ -149,12 +144,3 @@ func openDB(path string) *sql.DB {
 	}
 	return db
 }
-
-// Execute a query on a database
-func dbQuery(db *sql.DB, query string) {
-	_, err := db.Exec(query)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
