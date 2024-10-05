@@ -5,6 +5,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"time"
 	"flag"
+	"strings"
 )
 
 type note struct {
@@ -21,24 +22,35 @@ type note struct {
 }
 
 // Make note from CMD
-func makeNote(tags string) note {
+func makeNote(tags string, tagSeperate bool) note {
 	mkTime := time.Now().Unix()
 	text := createTextEditor("")
+	var t string
+	if tagSeperate {
+		t = createTextEditor(tags)
+	} else {
+		t = tags
+	}
 	return note{
 							id: ulid.Make().String(),
 							created: mkTime,
 							modified: mkTime,
 							body: string(text),
-							tags: validateTags(tags)} 
+							tags: validateTags(t)} 
 }
 
 // Edit a note
-func editNote(n *note) {
+func editNote(n *note, tagSeperate bool) {
 
 	text := createTextEditor(n.body)
 	modTime := time.Now().Unix()
 	n.modified = modTime
 	n.body = text
+	var t string
+	if tagSeperate {
+		t = createTextEditor(strings.Join(n.tags, " "))
+		n.tags = validateTags(t)
+	}
 
 	return
 }
@@ -47,6 +59,7 @@ func editNote(n *note) {
 func main() {
 	id := flag.String("id", "", "A list of note IDs.")
 	tags := flag.String("t", "", "A list of tags.")
+	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
 	// TODO add ets (edit-tags-seperately) flag, to, when creating/ eddintg a note, be able to eddint ags in a a seperate text editor instance
 	
@@ -56,7 +69,7 @@ func main() {
 	if len(args) == 0 { // quick note
 		db := openDB(*dbPath)
 		defer db.Close()
-		note := makeNote(*tags)
+		note := makeNote(*tags, *tagSep)
 		saveNewNote(&note, db)
 		return
 	} // quick note
@@ -71,7 +84,7 @@ func main() {
 		case "new":
 			db := openDB(*dbPath)
 			defer db.Close()
-			note := makeNote(*tags)
+			note := makeNote(*tags, *tagSep)
 			saveNewNote(&note, db)
 			return
 		case "search":
@@ -85,7 +98,7 @@ func main() {
 			} else {
 				db := openDB(*dbPath)
 				defer db.Close()
-				editNote(&n[0])
+				editNote(&n[0], *tagSep)
 				saveNoteUpdate(&n[0], db)
 			}
 		}
