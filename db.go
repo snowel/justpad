@@ -128,6 +128,22 @@ func updateTagRelations(note string, newTags []string, db *sql.DB) {
 	insertTagRelations(note, addTags, db)
 }
 
+// Query DB to get a tag struct of the given tag
+// If the tag doens't exist, output.tag == "" is true 
+func getTag(t string, db *sql.DB) tag {
+	var res tag
+	if err := db.QueryRow("SELECT * FROM tags WHERE tag = ?;", t).Scan(&res.tag, &res.tooltip, &res.functions); err != nil {
+		log.Print(err)
+	}
+	return res 
+}
+
+// Update a tag in the DB from a tag struct
+func saveTagUpdate(t *tag, db *sql.DB) {
+	_, err := db.Exec("UPDATE tags SET tooltip = ?, functions = ? WHERE tag = ?;", t.tooltip, t.functions, t.tag)
+	if err != nil { log.Fatal(err) }
+}
+
 // Open and return a database
 // REMEBER TO DEFER CLOSE
 func openDB(path string) *sql.DB {

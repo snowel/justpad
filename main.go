@@ -102,6 +102,10 @@ func main() {
 				fmt.Println(&n[0])
 				saveNoteUpdate(&n[0], db)
 			}
+		case "tooltip":
+			db := openDB(*dbPath)
+			defer db.Close()
+			editTooltip(*tags, db)	 
 		}
 	}
 }

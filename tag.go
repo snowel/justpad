@@ -4,7 +4,16 @@ import (
 	"strings"
 	"fmt"
 	"slices"
+
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
+
+type tag struct {
+	tag string
+	tooltip string
+	functions string
+}
 
 var TagReservedCharacters = []string{";", "!", "^", "@", "*", "{", "}", "=", "|", "\\"}
 
@@ -41,6 +50,39 @@ func validateTags(tags string) []string {
 	return all
 }
 
+// --- functions for combining UI funcitons related to tags
+ 
+// TODO refactor getting a single valid tag to a filter function
+func editTooltip(tag string, db *sql.DB) {
+	if tag == "" {
+		fmt.Println("You must provide a single, valid tag to edit the tooltip.")
+		return
+	}
+	ts := validateTags(tag)
+	nTags := len(ts)
+	if nTags > 1 {
+		fmt.Println("Please provide only 1 tag.")
+		return
+	}
+	if nTags < 1 {
+		fmt.Println("Please provide 1 valid tag.")
+		return
+	}
+
+	t := getTag(ts[0], db)
+
+	if t.tag == "" {
+		fmt.Println("This tag doesn't exist.")
+		return
+	}
+	newTooltip := createTextEditor(t.tooltip)
+
+	t.tooltip = newTooltip
+	saveTagUpdate(&t, db)
+
+}
+
+// --- Operations on slices of tags
 
 // Boolean difference
 func boolDiff(first, second []string) []string {
