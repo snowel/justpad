@@ -103,7 +103,7 @@ func insertTagRelations(note string, tags []string, db *sql.DB) {
 }
 
 func removeTagRelation(note, tag string, db *sql.DB) {
-	_, err := db.Exec("DELETE FROM tagged WHERE tag = '?' AND note = '?';", tag, note)// TODO Not sure this will work!!! Check exec!!
+	_, err := db.Exec("DELETE FROM tagged WHERE tag = ? AND note = ?;", tag, note)
 	if err != nil {
 			log.Fatal(err)
 	}
@@ -122,12 +122,14 @@ func updateTagRelations(note string, newTags []string, db *sql.DB) {
 
 	// Compare the tags twice
 	// old tags - new tags =  tags to be removed
-	delTags := boolDiff(newTags, oldTags)
+	delTags := boolDiff(oldTags, newTags)
+	fmt.Println(delTags)
 	removeTagRelations(note, delTags, db)
 
 	// TODO - discovery question - does it create a measurable performace chance to delte first?
 	// new tags - old tags already in the db = tags to be added
 	addTags := boolDiff(newTags, oldTags)
+	fmt.Println(addTags)
 	insertTagRelations(note, addTags, db)
 }
 

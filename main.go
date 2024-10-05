@@ -99,6 +99,7 @@ func main() {
 				db := openDB(*dbPath)
 				defer db.Close()
 				editNote(&n[0], *tagSep)
+				fmt.Println(&n[0])
 				saveNoteUpdate(&n[0], db)
 			}
 		}
