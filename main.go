@@ -3,10 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/oklog/ulid/v2"
-	"os"
-	"os/exec"
 	"time"
-	"log"
 	"flag"
 )
 
@@ -26,28 +23,7 @@ type note struct {
 // Make note from CMD
 func makeNote(tags string) note {
 	mkTime := time.Now().Unix()
-
-	tfile := ulid.Make().String()
-
-
-	cmd := exec.Command("nvim", tfile)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmdERR := cmd.Run()
-	if cmdERR != nil {
-		log.Fatal(cmdERR)
-	}
-
-	text, err := os.ReadFile(tfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = os.Remove(tfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	text := createTextEditor("")
 	return note{
 							id: ulid.Make().String(),
 							created: mkTime,
@@ -59,37 +35,10 @@ func makeNote(tags string) note {
 // Edit a note
 func editNote(n *note) {
 
-	tfile := ulid.Make().String()
-	f, err := os.Create(tfile)// TODO review FileMode use
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = f.WriteString(n.body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cmd := exec.Command("nvim", tfile)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmdERR := cmd.Run()
-	if cmdERR != nil {
-		log.Fatal(cmdERR)
-	}
-
-	text, err := os.ReadFile(tfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = os.Remove(tfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	text := createTextEditor(n.body)
 	modTime := time.Now().Unix()
 	n.modified = modTime
-	n.body = string(text)
+	n.body = text
 
 	return
 }
