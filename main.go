@@ -17,7 +17,7 @@ type note struct {
 	child string
 	sibling string
 	
-	created int64
+	created int64// TODO uint64??
 	modified int64
 	body string
 	tags []string
@@ -69,6 +69,7 @@ func main() {
 	tags := flag.String("t", "", "A list of tags.")
 	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
+	sortMode := flag.String("s", "", "Method by which to sort a list of notes.")
 	// TODO add ets (edit-tags-seperately) flag, to, when creating/ eddintg a note, be able to eddint ags in a a seperate text editor instance
 	
 	flag.Parse()
@@ -99,6 +100,7 @@ func main() {
 			db := openDB(*dbPath)
 			defer db.Close()
 			n := searchHierarchy(*id, *tags, db)
+			if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 			printNoteList(n)
 		case "edit":
 			db := openDB(*dbPath)
