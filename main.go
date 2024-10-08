@@ -86,44 +86,34 @@ func main() {
 
 	if len(args) == 1 {
 
-	// TODO Can I open and defer DB here? Technically, but will be funky once we have alt UIs...
+		db := openDB(*dbPath)
+		defer db.Close()
+
 		switch args[0] {
 		case "init-db":
 			initDB(*dbPath)
 		case "new":
-			db := openDB(*dbPath)
-			defer db.Close()
 			note := makeNote(*tags, *tagSep)
 			saveNewNote(&note, db)
 			return
 		case "search":
-			db := openDB(*dbPath)
-			defer db.Close()
 			n := searchHierarchy(*id, *tags, db)
 			if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 			printNoteList(n)
 		case "edit":
-			db := openDB(*dbPath)
-			defer db.Close()
 			n := searchHierarchy(*id, *tags, db)
 			if len(n) != 1 {
 				fmt.Println("Sorry, your current options either return 0, of more than 1 note.")
 				return
 			} else {
-				db := openDB(*dbPath)
-				defer db.Close()
 				editNote(&n[0], *tagSep)
 				fmt.Println(&n[0])
 				saveNoteUpdate(&n[0], db)
 			}
 		case "delete":
-			db := openDB(*dbPath)
-			defer db.Close()
 			n := searchHierarchy(*id, *tags, db)
 			deleteNoteList(n, db)
 		case "tooltip":
-			db := openDB(*dbPath)
-			defer db.Close()
 			editTooltip(*tags, db)	 
 		}
 	}
