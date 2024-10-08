@@ -12,16 +12,12 @@ import (
 
 // Takes possible search methods and executes them in order of priority TODO Add combined search (althgouh that might require experaiion, or, proprecisely, another flag (i.e. all matching or matching all (i.e. tags and creation date, or tags/or creation date)))
 // Currently, this is pure hierarchy ID, then tags
-func searchHierarchy(id, tags, dbPath string) []note {
+func searchHierarchy(id, tags string, db *sql.DB) []note {
 	if id != "" {
-		db := openDB(dbPath)
-		defer db.Close()
 		n := searchByIDs(strings.Fields(id), db)
 		return n
 	}
 	if tags != "" {
-		db := openDB(dbPath)
-		defer db.Close()
 		n := searchByTags(strings.Fields(tags), db)
 		return n
 	}

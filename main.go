@@ -6,6 +6,8 @@ import (
 	"time"
 	"flag"
 	"strings"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type note struct {
@@ -55,6 +57,12 @@ func editNote(n *note, tagSeperate bool) {
 	return
 }
 
+func deleteNoteList(n []note, db *sql.DB) {
+	for _, v := range n {
+		removeNote(v.id, db)
+	}
+}
+
 
 func main() {
 	id := flag.String("id", "", "A list of note IDs.")
@@ -88,10 +96,14 @@ func main() {
 			saveNewNote(&note, db)
 			return
 		case "search":
-			n := searchHierarchy(*id, *tags, *dbPath)
+			db := openDB(*dbPath)
+			defer db.Close()
+			n := searchHierarchy(*id, *tags, db)
 			printNoteList(n)
 		case "edit":
-			n := searchHierarchy(*id, *tags, *dbPath)
+			db := openDB(*dbPath)
+			defer db.Close()
+			n := searchHierarchy(*id, *tags, db)
 			if len(n) != 1 {
 				fmt.Println("Sorry, your current options either return 0, of more than 1 note.")
 				return
@@ -102,6 +114,11 @@ func main() {
 				fmt.Println(&n[0])
 				saveNoteUpdate(&n[0], db)
 			}
+		case "delete":
+			db := openDB(*dbPath)
+			defer db.Close()
+			n := searchHierarchy(*id, *tags, db)
+			deleteNoteList(n, db)
 		case "tooltip":
 			db := openDB(*dbPath)
 			defer db.Close()

@@ -144,6 +144,24 @@ func saveTagUpdate(t *tag, db *sql.DB) {
 	if err != nil { log.Fatal(err) }
 }
 
+// Remove note from DB
+func removeNote(note string, db *sql.DB) {
+	// Remove the note from notes
+	_, err := db.Exec("DELETE FROM notes WHERE id = ?", note)
+	if err != nil { log.Fatal(err) }
+
+	// Remove tag relations (but not tags)
+	_, err = db.Exec("DELETE FROM tagged WHERE note = ?", note)
+	if err != nil { log.Fatal(err) }
+
+	// Remove the note from tree TODO behaviour for children nodes!
+	// Remove all link to, from and bilinks
+	_, err = db.Exec("DELETE FROM links WHERE start = ? OR end = ?", note, note)
+	if err != nil { log.Fatal(err) }
+	_, err = db.Exec("DELETE FROM undirected WHERE note1 = ? OR note2 = ?", note, note)
+	if err != nil { log.Fatal(err) }
+}
+
 // Open and return a database
 // REMEBER TO DEFER CLOSE
 func openDB(path string) *sql.DB {
