@@ -124,3 +124,12 @@ func searchForTags(id string, db *sql.DB) []string {
 	}
 	return list
 }
+
+// for commands that require a single note
+func filterSingle(ns []note) note {
+	if len(ns) != 1 {
+		log.Fatal("Sorry, your current options either return 0, of more than 1 note.")// TODO Can these fata logs mess up anything by not closing the db?
+	}
+	n := ns[0]
+	return n
+}

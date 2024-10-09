@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/oklog/ulid/v2"
 	"time"
 	"flag"
@@ -78,7 +77,6 @@ func main() {
 	pocket := flag.Bool("p", false, "Specifiy if the pocket is used for searching.")
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before doing anything else.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
-	// TODO add ets (edit-tags-seperately) flag, to, when creating/ eddintg a note, be able to eddint ags in a a seperate text editor instance
 	
 	flag.Parse()
 	args := flag.Args()
@@ -120,28 +118,24 @@ func main() {
 			printNoteList(n)
 			pushListToPocket(n, db)
 		case "edit":
-			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
-			if len(n) != 1 {
-				fmt.Println("Sorry, your current options either return 0, of more than 1 note.")
-				return
-			} else {
-				editNote(&n[0], *tagSep)
-				fmt.Println(&n[0])
-				saveNoteUpdate(&n[0], db)
-				pushNoteToPocket(n[0].id, db)
-			}
+			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			n := filterSingle(ns)
+			editNote(&n, *tagSep)
+			saveNoteUpdate(&n, db)
+			pushNoteToPocket(n.id, db)
 		case "delete":
+			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			n := filterSingle(ns)
+			removeNote(n.id, db)
+		case "delete-all":
 			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
 			deleteNoteList(n, db)
 		case "tooltip":
 			editTooltip(*tags, db)	 
 		case "set":// requires a single note
-			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
-			if len(n) != 1 {
-				fmt.Println("Sorry, your current options either return 0, of more than 1 note.")
-			} else {
-				setActive(n[0].id, db)
-			}
+			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			n := filterSingle(ns)
+			setActive(n.id, db)
 		case "clear":
 			clearActive(db)
 		case "debug":
