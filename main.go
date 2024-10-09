@@ -70,6 +70,7 @@ func deleteNoteList(n []note, db *sql.DB) {
 
 func main() {
 	id := flag.String("id", "", "A list of note IDs.")
+	active := flag.Bool("a", false, "Refers to the stored active note, if there is one.")
 	tags := flag.String("t", "", "A list of tags.")
 	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
@@ -114,12 +115,12 @@ func main() {
 			pushNoteToPocket(note.id, db)
 			return
 		case "list":
-			n := searchHierarchy(*id, *tags, *pocket, *rank, db)
+			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
 			if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 			printNoteList(n)
 			pushListToPocket(n, db)
 		case "edit":
-			n := searchHierarchy(*id, *tags, *pocket, *rank, db)
+			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
 			if len(n) != 1 {
 				fmt.Println("Sorry, your current options either return 0, of more than 1 note.")
 				return
@@ -130,10 +131,19 @@ func main() {
 				pushNoteToPocket(n[0].id, db)
 			}
 		case "delete":
-			n := searchHierarchy(*id, *tags, *pocket, *rank, db)
+			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
 			deleteNoteList(n, db)
 		case "tooltip":
 			editTooltip(*tags, db)	 
+		case "set":// requires a single note
+			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			if len(n) != 1 {
+				fmt.Println("Sorry, your current options either return 0, of more than 1 note.")
+			} else {
+				setActive(n[0].id, db)
+			}
+		case "clear":
+			clearActive(db)
 		case "debug":
 			t()
 		}

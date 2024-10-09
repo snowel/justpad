@@ -30,16 +30,13 @@ func initDB(path string) {
 	if _, err := os.Stat(adjustedPath); errors.Is(err, os.ErrNotExist) {
 		_, err := os.Create(adjustedPath)
 		if err != nil {
-			print(adjustedPath)
 			log.Fatal(err)
 		}
 	} else {
 		log.Print("This database already exists.")
-		print("This database already exists.")
 		return
 	}
 	
-	print(adjustedPath)
 	db := openDB(adjustedPath)
 	defer db.Close()
 	
@@ -70,17 +67,13 @@ func initDB(path string) {
 	// Persistent pocket
 	_, err = db.Exec("CREATE TABLE pocket(note text UNIQUE, rank int UNIQUE);")
 	if err != nil { log.Fatal( err ) }
+
+	// Persistent pocket
+	_, err = db.Exec("CREATE TABLE active(note text);")
+	if err != nil { log.Fatal( err ) }
 }
 
 /*
-
-	TODO - Removal/update of DB can be done 2 ways:
-	Upon in memory action, immidiately make equivalent change in DB
-	Creat update functions
-
-	Upon update - create a column of flags, set the flag on the opperating note to 0, then which each relation being updated, set the flag to 1, then delet all the relations with the flag still on 0
-	Uppon update - a temporary table cna be created, to store the added taggs upons updating 
-
 
 	TODO - SQL typed date and time for searching and sorting?
 	*/

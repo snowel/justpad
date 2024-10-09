@@ -7,6 +7,25 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Active note
+// Active note is a single note that can be manually set asside for later use/reference
+
+func getActive(db *sql.DB) note {
+	var noteID string
+	if err := db.QueryRow("SELECT note FROM active;").Scan(&noteID); err != nil { log.Fatal(err) }
+	return searchByID(noteID, db)	
+}
+
+func setActive(noteID string, db *sql.DB) {
+	clearActive(db)
+	_, err := db.Exec("INSERT INTO active values(?);", noteID)
+	if err != nil { log.Fatal( err ) }
+}
+
+func clearActive(db *sql.DB) {
+	_, err := db.Exec("DELETE FROM active;")
+	if err != nil { log.Fatal( err ) }
+}
 
 // Live pocket - live pocket is dedicated to memory only, used during a read mode session
 
