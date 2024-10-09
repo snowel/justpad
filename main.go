@@ -83,15 +83,15 @@ func main() {
 		return
 	} // quick note
 
-
 	if len(args) == 1 {
+		if args[0] == "init-db" {
+			initDB(*dbPath)
+		}
 
 		db := openDB(*dbPath)
 		defer db.Close()
 
 		switch args[0] {
-		case "init-db":
-			initDB(*dbPath)
 		case "new":
 			note := makeNote(*tags, *tagSep)
 			saveNewNote(&note, db)

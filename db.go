@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"log"
+	"errors"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -11,27 +12,39 @@ import (
 // TODO is called when the file is not found
 func initDB(path string) {
 	// TODO help mesage if a db already exists
+	var adjustedPath string
 	if path == "" {
-		path, err := os.UserHomeDir()
+		p, err := os.UserHomeDir()
 		if err != nil {
 			log.Fatal(err)
 		}
-		path = path + "/.justpad"
-		
-		os.MkdirAll(path, 0775)
-		path = path + "/db"
+		p = p + "/.justpad"
+		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+			os.MkdirAll(path, 0775)
+		}
+		adjustedPath = p + "/db"
+	} else {
+		adjustedPath = path
 	}
 	
-	_, err := os.Create(path)
-	if err != nil {
-		log.Fatal(err)
+	if _, err := os.Stat(adjustedPath); errors.Is(err, os.ErrNotExist) {
+		_, err := os.Create(adjustedPath)
+		if err != nil {
+			print(adjustedPath)
+			log.Fatal(err)
+		}
+	} else {
+		log.Print("This database already exists.")
+		print("This database already exists.")
+		return
 	}
 	
-	db := openDB(path)
+	print(adjustedPath)
+	db := openDB(adjustedPath)
 	defer db.Close()
 	
 	// Create table for notes
-	_, err = db.Exec("CREATE TABLE notes(id text UNIQUE, body text, created int, modified int);")
+	_, err := db.Exec("CREATE TABLE notes(id text UNIQUE, body text, created int, modified int);")
 	if err != nil { log.Fatal( err ) }
 
 	// Create table for directional links
@@ -170,7 +183,7 @@ func openDB(path string) *sql.DB {
 		if err != nil {
 			log.Fatal(err)
 		}
-		path = p //TODO add the default file strucure to all these defaulting empty path things
+		path = p + "/.justpad/db" //TODO add the default file strucure to all these defaulting empty path things
 	}
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
