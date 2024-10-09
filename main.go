@@ -113,7 +113,7 @@ func main() {
 			saveNewNote(&note, db)
 			pushNoteToPocket(note.id, db)
 			return
-		case "search":
+		case "list":
 			n := searchHierarchy(*id, *tags, *pocket, *rank, db)
 			if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 			printNoteList(n)
