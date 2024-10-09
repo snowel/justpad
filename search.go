@@ -12,10 +12,19 @@ import (
 
 // Takes possible search methods and executes them in order of priority TODO Add combined search (althgouh that might require experaiion, or, proprecisely, another flag (i.e. all matching or matching all (i.e. tags and creation date, or tags/or creation date)))
 // Currently, this is pure hierarchy ID, then tags
-func searchHierarchy(id, tags string, db *sql.DB) []note {
+func searchHierarchy(id, tags string, pocket bool, rank int, db *sql.DB) []note {
 	if id != "" {
 		n := searchByIDs(strings.Fields(id), db)
 		return n
+	}
+	if pocket {
+		if rank != 0 {
+			n := searchSinglePocket(rank, db)
+			notes := make([]note, 1) // TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+			notes[0] = n
+			return notes
+		}
+		return searchFullPocket(db)
 	}
 	if tags != "" {
 		n := searchByTags(strings.Fields(tags), db)
@@ -23,6 +32,8 @@ func searchHierarchy(id, tags string, db *sql.DB) []note {
 	}
 	return make([]note, 0)
 }
+
+func searchCombined() {} //TODO add searching that accounts for all specified flags
 
 func searchByID(id string, db *sql.DB) note {
 	var n note

@@ -11,7 +11,7 @@ import (
 
 // TODO is called when the file is not found
 func initDB(path string) {
-	// TODO help mesage if a db already exists
+
 	var adjustedPath string
 	if path == "" {
 		p, err := os.UserHomeDir()
@@ -65,6 +65,10 @@ func initDB(path string) {
 
 	// Tag relations
 	_, err = db.Exec("CREATE TABLE tagged(tag text, note text);")
+	if err != nil { log.Fatal( err ) }
+
+	// Persistent pocket
+	_, err = db.Exec("CREATE TABLE pocket(note text UNIQUE, rank int UNIQUE);")
 	if err != nil { log.Fatal( err ) }
 }
 
@@ -173,6 +177,9 @@ func removeNote(note string, db *sql.DB) {
 	if err != nil { log.Fatal(err) }
 	_, err = db.Exec("DELETE FROM undirected WHERE note1 = ? OR note2 = ?", note, note)
 	if err != nil { log.Fatal(err) }
+	
+	// remove from pocket
+	dropFromPocket(note, db)
 }
 
 // Open and return a database
