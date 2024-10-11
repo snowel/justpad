@@ -127,7 +127,7 @@ func main() {
 			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
 			n := filterSingle(ns)
 			removeNote(n.id, db)
-		case "delete-all":
+		case "delete-list":
 			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
 			deleteNoteList(n, db)
 		case "tooltip":
