@@ -173,6 +173,9 @@ func removeNote(note string, db *sql.DB) {
 	
 	// remove from pocket
 	dropFromPocket(note, db)
+	// remove active note if it is tje active note
+	_, err = db.Exec("DELETE FROM active WHERE note = ?;", note)
+	if err != nil { log.Fatal( err ) }
 }
 
 // Open and return a database
