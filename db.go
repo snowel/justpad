@@ -65,7 +65,7 @@ func initDB(path string) {
 	if err != nil { log.Fatal( err ) }
 
 	// Persistent pocket
-	_, err = db.Exec("CREATE TABLE pocket(note text UNIQUE, rank int UNIQUE);")
+	_, err = db.Exec("CREATE TABLE pocket(note text UNIQUE, rank int);")
 	if err != nil { log.Fatal( err ) }
 
 	// Persistent pocket
