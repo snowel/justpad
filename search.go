@@ -9,6 +9,106 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func searchSwitch(mode, id, tags string, active, pocket bool, rank int, db *sql.DB) []note {
+	switch mode {
+	case "hierarchy":
+		return searchHierarchy(id, tags, active, pocket, rank, db)
+	case "optional":
+		return searchOptional(id, tags, active, pocket, rank, db)
+	case "combined":
+		return searchCombined(id, tags, active, pocket, rank, db)
+	default:
+		return searchHierarchy(id, tags, active, pocket, rank, db)
+	}
+	
+}
+
+func searchCombined(id, tags string, active, pocket bool, rank int, db *sql.DB) []note {
+	ns := make([]note, 0)
+	firstNoteFlag := true// If we don't chekc for a first note, our empty slice will cancel every note we find
+	if active {
+		singleNote := getActive(db)
+		n := make([]note, 1) // TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+		n[0] = singleNote
+		if firstNoteFlag {
+			ns = n
+			firstNoteFlag = false
+		}// There is no posibility of it not being the first note here
+	}
+
+	if id != "" {
+		n := searchByIDs(strings.Fields(id), db)
+		if firstNoteFlag {
+			ns = n
+			firstNoteFlag = false
+		} else {
+			ns = noteIntersect(ns, n)
+		}
+	}
+	if pocket {
+		if rank != 0 {
+			singleNote := searchSinglePocket(rank, db)
+			n := make([]note, 1) // TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+			n[0] = singleNote
+			if firstNoteFlag {
+				ns = n
+				firstNoteFlag = false
+			} else {
+				ns = noteIntersect(ns, n)
+			}
+		} else {
+			n := searchFullPocket(db)
+			if firstNoteFlag {
+				ns = n
+				firstNoteFlag = false
+			} else {
+				ns = noteIntersect(ns, n)
+			}
+		}
+	}
+	if tags != "" {
+		n := searchByTags(strings.Fields(tags), db)
+		if firstNoteFlag {
+			ns = n
+			firstNoteFlag = false
+		} else {
+			ns = noteIntersect(ns, n)
+		}
+	}
+	return ns
+}
+
+// TODO this can probably be quicker
+func searchOptional(id, tags string, active, pocket bool, rank int, db *sql.DB) []note {
+	ns := make([]note, 0)
+	if active {
+		n := getActive(db)
+		notes := make([]note, 1) // TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+		notes[0] = n
+		noteUnion(&ns, &notes)
+	}
+
+	if id != "" {
+		n := searchByIDs(strings.Fields(id), db)
+		noteUnion(&ns, &n)
+	}
+	if pocket {
+		if rank != 0 {
+			n := searchSinglePocket(rank, db)
+			notes := make([]note, 1) // TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+			notes[0] = n
+			noteUnion(&ns, &notes)
+		} else {
+			n := searchFullPocket(db)
+			noteUnion(&ns, &n) 
+		}
+	}
+	if tags != "" {
+		n := searchByTags(strings.Fields(tags), db)
+		noteUnion(&ns, &n)
+	}
+	return ns
+}
 
 // Takes possible search methods and executes them in order of priority TODO Add combined search (althgouh that might require experaiion, or, proprecisely, another flag (i.e. all matching or matching all (i.e. tags and creation date, or tags/or creation date)))
 // Currently, this is pure hierarchy ID, then tags
@@ -38,8 +138,6 @@ func searchHierarchy(id, tags string, active, pocket bool, rank int, db *sql.DB)
 	}
 	return make([]note, 0)
 }
-
-func searchCombined() {} //TODO add searching that accounts for all specified flags
 
 func searchByID(id string, db *sql.DB) note {
 	var n note

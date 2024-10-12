@@ -74,6 +74,7 @@ func main() {
 	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
 	sortMode := flag.String("s", "", "Method by which to sort a list of notes.")
+	searchMode := flag.String("m", "hierarchy", "Method by which to sort a list of notes.")
 	pocket := flag.Bool("p", false, "Specifiy if the pocket is used for searching.")
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before doing anything else.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
@@ -113,27 +114,27 @@ func main() {
 			pushNoteToPocket(note.id, db)
 			return
 		case "list":
-			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
 			if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 			printNoteList(n)
 			pushListToPocket(n, db)
 		case "edit":
-			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
 			n := filterSingle(ns)
 			editNote(&n, *tagSep)
 			saveNoteUpdate(&n, db)
 			pushNoteToPocket(n.id, db)
 		case "delete":
-			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
 			n := filterSingle(ns)
 			removeNote(n.id, db)
 		case "delete-list":
-			n := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
 			deleteNoteList(n, db)
 		case "tooltip":
 			editTooltip(*tags, db)	 
 		case "set":// requires a single note
-			ns := searchHierarchy(*id, *tags, *active, *pocket, *rank, db)
+			ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
 			n := filterSingle(ns)
 			setActive(n.id, db)
 		case "clear":

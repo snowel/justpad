@@ -94,3 +94,24 @@ func boolDiff(first, second []string) []string {
 	}
 	return res
 } 
+
+// TODO generics or generalization
+// Adds addSlice to mutSlice, without creating duplicates 
+func noteUnion(mutSlice, addSlice *[]note) {
+	for _, v :=  range *addSlice {
+		if !slices.ContainsFunc(*mutSlice, func(n note) bool {return n.id == v.id}) {
+			*mutSlice = append(*mutSlice, v)
+		}
+	}
+}
+
+// returns a slice of all notes in common between the 2 notes
+func noteIntersect(as, bs []note) []note {
+	cs := make([]note, 0)
+	for _, v :=  range bs {
+		if slices.ContainsFunc(as, func(n note) bool {return n.id == v.id}) {
+			cs = append(cs, v)
+		}
+	}
+	return cs
+}
