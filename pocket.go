@@ -12,7 +12,10 @@ import (
 
 func getActive(db *sql.DB) note {
 	var noteID string
-	if err := db.QueryRow("SELECT note FROM active;").Scan(&noteID); err != nil { log.Fatal(err) }
+	if err := db.QueryRow("SELECT note FROM active;").Scan(&noteID); err != nil { 
+		log.Print("There is no active note.")
+		log.Fatal(err)
+	}
 	return searchByID(noteID, db)	
 }
 

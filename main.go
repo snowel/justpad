@@ -70,6 +70,7 @@ func deleteNoteList(n []note, db *sql.DB) {
 func main() {
 	id := flag.String("id", "", "A list of note IDs.")
 	active := flag.Bool("a", false, "Refers to the stored active note, if there is one.")
+	links := flag.String("lk", "", "Use links from/to the active note as a selector.")
 	tags := flag.String("t", "", "A list of tags.")
 	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
@@ -113,47 +114,47 @@ func main() {
 		pushNoteToPocket(note.id, db)
 		return
 	case "list":
-		n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 		printNoteList(n)
 		pushListToPocket(n, db)
 	case "edit":
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		editNote(&n, *tagSep)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
 	case "delete":
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		removeNote(n.id, db)
 	case "delete-list":
-		n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		deleteNoteList(n, db)
 	case "tooltip":
 		editTooltip(*tags, db)	 
 	case "set":// requires a single note
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		setActive(n.id, db)
 	case "clear":
 		clearActive(db)
 	case "set-link": // 2 arg command 
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		setLinkSwitch(args[1], n, db)
 	case "sl": // TODO cleaner multiple alias
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		setLinkSwitch(args[1], n, db)
 	case "list-links": // 2 arg command
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		ns = getLinkSwitch(args[1], n.id, db)
 		printNoteList(ns)
 		pushListToPocket(ns, db)
 	case "lsl": // 2 arg command
-		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		n := filterSingle(ns)
 		ns = getLinkSwitch(args[1], n.id, db)
 		printNoteList(ns)

@@ -73,3 +73,15 @@ func getLinksTo(noteID string, db *sql.DB) []string {
 	}
 	 return list
 }
+
+func getLinksFromActive(db *sql.DB) []note {
+	activeNote := getActive(db)
+	noteList := getLinksFrom(activeNote.id, db) 
+	return searchByIDs(noteList, db)
+}
+
+func getLinksToActive(db *sql.DB) []note {
+	activeNote := getActive(db)
+	noteList := getLinksTo(activeNote.id, db) 
+	return searchByIDs(noteList, db)
+}
