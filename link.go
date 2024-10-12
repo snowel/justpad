@@ -23,9 +23,8 @@ func setLinkSwitch(cmd string, selectedNote note, db *sql.DB) {
 		setLink(activeNote.id, selectedNote.id, db)
 	}
 }
-
 func setLink(from, to string, db *sql.DB) {
-	_, err := db.Exec("INSERT INTO links values(?, ?);", from, to)
+	_, err := db.Exec("INSERT INTO links SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM links WHERE start = ? AND end = ?);", from, to, from, to)
 	if err != nil {log.Fatal(err)}
 }
 
