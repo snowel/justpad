@@ -98,49 +98,67 @@ func main() {
 		return
 	} // quick note
 
-	if len(args) == 1 {
-		if args[0] == "init-db" {
-			initDB(*dbPath)
-		}
+	if args[0] == "init-db" {
+		initDB(*dbPath)
+	}
 
-		db := openDB(*dbPath)
-		defer db.Close()
+	db := openDB(*dbPath)
+	defer db.Close()
 
-		// TODO add a split here for expresions returning a single note?... then we'd have to eval multiple times...
-		switch args[0] {
-		case "new":
-			note := makeNote(*tags, *tagSep)
-			saveNewNote(&note, db)
-			pushNoteToPocket(note.id, db)
-			return
-		case "list":
-			n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
-			if *sortMode != "" {sortNotesMut(n, *sortMode)}		
-			printNoteList(n)
-			pushListToPocket(n, db)
-		case "edit":
-			ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
-			n := filterSingle(ns)
-			editNote(&n, *tagSep)
-			saveNoteUpdate(&n, db)
-			pushNoteToPocket(n.id, db)
-		case "delete":
-			ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
-			n := filterSingle(ns)
-			removeNote(n.id, db)
-		case "delete-list":
-			n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
-			deleteNoteList(n, db)
-		case "tooltip":
-			editTooltip(*tags, db)	 
-		case "set":// requires a single note
-			ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
-			n := filterSingle(ns)
-			setActive(n.id, db)
-		case "clear":
-			clearActive(db)
-		case "debug":
-			t()
-		}
+	// TODO add a split here for expresions returning a single note?... then we'd have to eval multiple times...
+	switch args[0] {
+	case "new":
+		note := makeNote(*tags, *tagSep)
+		saveNewNote(&note, db)
+		pushNoteToPocket(note.id, db)
+		return
+	case "list":
+		n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
+		printNoteList(n)
+		pushListToPocket(n, db)
+	case "edit":
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		editNote(&n, *tagSep)
+		saveNoteUpdate(&n, db)
+		pushNoteToPocket(n.id, db)
+	case "delete":
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		removeNote(n.id, db)
+	case "delete-list":
+		n := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		deleteNoteList(n, db)
+	case "tooltip":
+		editTooltip(*tags, db)	 
+	case "set":// requires a single note
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		setActive(n.id, db)
+	case "clear":
+		clearActive(db)
+	case "set-link": // 2 arg command 
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		setLinkSwitch(args[1], n, db)
+	case "sl": // TODO cleaner multiple alias
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		setLinkSwitch(args[1], n, db)
+	case "list-links": // 2 arg command
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		ns = getLinkSwitch(args[1], n.id, db)
+		printNoteList(ns)
+		pushListToPocket(ns, db)
+	case "lsl": // 2 arg command
+		ns := searchSwitch(*searchMode, *id, *tags, *active, *pocket, *rank, db)
+		n := filterSingle(ns)
+		ns = getLinkSwitch(args[1], n.id, db)
+		printNoteList(ns)
+		pushListToPocket(ns, db)
+	case "debug":
+		t()
 	}
 }
