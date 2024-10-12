@@ -90,7 +90,7 @@ func searchFullPocket(db *sql.DB) []note {
 
 func searchSinglePocket(rank int, db *sql.DB) note {
 	list := getPocket(db)
-	if len(list) <= rank {
+	if len(list) >= rank {
 		return searchByID(list[rank - 1], db)
 	}
 
