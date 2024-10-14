@@ -35,6 +35,10 @@ func getLinkSwitch(cmd, noteID string, db *sql.DB) []note {
 		noteList = getLinksTo(noteID, db)
 	case "from":
 		noteList = getLinksFrom(noteID, db)
+	case "all":
+		noteList = getLinksTo(noteID, db)
+		n := getLinksFrom(noteID, db)
+		stringUnion(&noteList, n)
 	default:
 		fmt.Println(cmd, " Is not a valid argument for list-links.")
 	}

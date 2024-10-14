@@ -230,14 +230,8 @@ func searchByTag(tag string, db *sql.DB) []string {
 func searchByTags(tags []string, db *sql.DB) []note {
 	list := make([]string, 0)
 	for _, v := range tags {
-		tmp := searchByTag(v, db)
-		for _, id := range tmp { // TODO Ugly and probaly slower than it needs to be. Replace arrays with sets (i.e. stringset)
-			if !slices.Contains(list, id) {
-				list = append(list, id)
-			}
-		}
+		stringUnion(&list, searchByTag(v, db))
 	}
-
 	return searchByIDs(list, db)
 }
 

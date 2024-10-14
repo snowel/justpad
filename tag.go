@@ -95,6 +95,16 @@ func boolDiff(first, second []string) []string {
 	return res
 } 
 
+// Adds addSlice to mutSlice, without creating duplicates 
+// TODO Ugly and probaly slower than it needs to be. Replace arrays with sets (i.e. stringset)
+func stringUnion(mutSlice *[]string, addSlice []string) {//TODO testing the ergonomics of having pointer to only the mut slice 
+	for _, v := range addSlice { 
+		if !slices.Contains(*mutSlice, v) {
+			*mutSlice = append(*mutSlice, v)
+		}
+	}
+}
+
 // TODO generics or generalization
 // Adds addSlice to mutSlice, without creating duplicates 
 func noteUnion(mutSlice, addSlice *[]note) {
