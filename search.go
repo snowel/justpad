@@ -9,16 +9,16 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func searchSwitch(mode, id, tags, links string, active, pocket bool, rank int, db *sql.DB) []note {
-	switch mode {
+func searchSwitch(s selector, db *sql.DB) []note {
+	switch s.mode {
 	case "hierarchy":
-		return searchHierarchy(id, tags, links, active, pocket, rank, db)
+		return searchHierarchy(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	case "optional":
-		return searchOptional(id, tags, links, active, pocket, rank, db)
+		return searchOptional(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	case "combined":
-		return searchCombined(id, tags, links, active, pocket, rank, db)
+		return searchCombined(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	default:
-		return searchHierarchy(id, tags, links, active, pocket, rank, db)
+		return searchHierarchy(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	}
 	
 }

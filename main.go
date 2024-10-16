@@ -26,6 +26,12 @@ type note struct {
 	tags []string
 }
 
+type selector struct {
+	id, tags, links, mode string
+	active, pocket bool
+	rank int
+}
+
 func emptyNote() note {
 	var n note
 	n.id = ulid.Make().String()
@@ -85,10 +91,18 @@ func main() {
 	pocket := flag.Bool("p", false, "Specifiy if the pocket is used for searching.")
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before doing anything else.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
-	
+
 	flag.Parse()
 	args := flag.Args()
 
+	selector := selector{
+			id: *id,
+			tags: *tags,
+			links: *links,
+			active: *active,
+			mode: *searchMode,
+			pocket: *pocket,
+			rank: *rank, }
 
 	if *clearPocket {
 		db := openDB(*dbPath)
@@ -120,54 +134,54 @@ func main() {
 		pushNoteToPocket(note.id, db)
 		return
 	case "list":
-		n := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		n := searchSwitch(selector, db)
 		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 		printNoteList(n)
 		pushListToPocket(n, db)
 	case "edit":
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		editNote(&n, *tagSep)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
 	case "delete":
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		removeNote(n.id, db)
 	case "delete-list":
-		n := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		n := searchSwitch(selector, db)
 		deleteNoteList(n, db)
 	case "tooltip":
 		editTooltip(*tags, db)	 
 	case "set":// requires a single note
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setActive(n.id, db)
 	case "clear":
 		clearActive(db)
 	case "set-link": // 2 arg command 
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setLinkSwitch(args[1], n, db)
 	case "sl": // TODO cleaner multiple alias
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setLinkSwitch(args[1], n, db)
 	case "list-links": // 2 arg command
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		ns = getLinkSwitch(args[1], n.id, db)
 		printNoteList(ns)
 		pushListToPocket(ns, db)
 	case "lsl": // 2 arg command
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		ns = getLinkSwitch(args[1], n.id, db)
 		printNoteList(ns)
 		pushListToPocket(ns, db)
 	case "merge": // 2 arg command
 	// TODO add funciton to check for len of args
-		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		ns := searchSwitch(selector, db)
 		mode := ""
 		if len(args) >= 2 {mode = args[1]}
 		merge(ns, "\n---\njustpad-merge\n---\n", mode, db)//TODO temp hardcoded the sep, eventually, will add optional extra arg
