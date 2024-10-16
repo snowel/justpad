@@ -10,10 +10,8 @@ import (
 // It's code that probably won't be reused, and often has self-contained functionality (like saving and adding to pocket).
 
 
-
 // Merge a list of notes
 // TODO newlines not being parsed as the sep argument
-// There's a speerator heading the merged note
 func merge(mergeList []note, sep, mergeMode string, db *sql.DB) note {
 	// If the list is a single note long... not doing anything
 
@@ -23,7 +21,7 @@ func merge(mergeList []note, sep, mergeMode string, db *sql.DB) note {
 
 	// For each note in the list, combine the text into the new note
 	for _, v := range mergeList {
-		newNote.body = newNote.body + sep + v.body
+		newNote.body = newNote.body + v.body + sep //Adding at the end prevents leading merge (at the cost of a trailing merge)
 		stringUnion(&newNote.tags, v.tags)
 		if newNote.created > v.created {newNote.created = v.created}
 		switch mergeMode {

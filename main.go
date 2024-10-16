@@ -169,8 +169,8 @@ func main() {
 	// TODO add funciton to check for len of args
 		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
 		mode := ""
-		if len(args) >= 3 {mode = args[2]}
-		merge(ns, args[1], mode, db)
+		if len(args) >= 2 {mode = args[1]}
+		merge(ns, "\n---\njustpad-merge\n---\n", mode, db)//TODO temp hardcoded the sep, eventually, will add optional extra arg
 	case "debug":
 		t()
 	}
