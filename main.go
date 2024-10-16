@@ -26,6 +26,12 @@ type note struct {
 	tags []string
 }
 
+func emptyNote() note {
+	var n note
+	n.id = ulid.Make().String()
+	return n
+}
+
 // Make note from CMD
 func makeNote(tags string, tagSeperate bool) note {
 	mkTime := time.Now().Unix()
@@ -159,6 +165,12 @@ func main() {
 		ns = getLinkSwitch(args[1], n.id, db)
 		printNoteList(ns)
 		pushListToPocket(ns, db)
+	case "merge": // 2 arg command
+	// TODO add funciton to check for len of args
+		ns := searchSwitch(*searchMode, *id, *tags, *links, *active, *pocket, *rank, db)
+		mode := ""
+		if len(args) >= 3 {mode = args[2]}
+		merge(ns, args[1], mode, db)
 	case "debug":
 		t()
 	}
