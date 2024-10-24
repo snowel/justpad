@@ -133,7 +133,7 @@ func main() {
 		saveNewNote(&note, db)
 		pushNoteToPocket(note.id, db)
 		return
-	case "list":
+	case "list", "ls":
 		n := searchSwitch(selector, db)
 		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 		printNoteList(n)
@@ -159,21 +159,12 @@ func main() {
 		setActive(n.id, db)
 	case "clear":
 		clearActive(db)
-	case "set-link": // 2 arg command 
+	case "set-link", "sl": // 2 arg command 
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setLinkSwitch(args[1], n, db)
-	case "sl": // TODO cleaner multiple alias
-		ns := searchSwitch(selector, db)
-		n := filterSingle(ns)
-		setLinkSwitch(args[1], n, db)
-	case "list-links": // 2 arg command
-		ns := searchSwitch(selector, db)
-		n := filterSingle(ns)
-		ns = getLinkSwitch(args[1], n.id, db)
-		printNoteList(ns)
-		pushListToPocket(ns, db)
-	case "lsl": // 2 arg command
+		//TODO pocket?
+	case "list-links", "lsl": // 2 arg command
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		ns = getLinkSwitch(args[1], n.id, db)

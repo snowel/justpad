@@ -16,7 +16,8 @@ func printNote(n *note) {
 }
 
 func printNoteList(ns []note) {
-	for _, v := range ns {
+	for i, v := range ns {
+		fmt.Println("Rank: ", i+1)
 		printNote(&v)
 	}
 }
