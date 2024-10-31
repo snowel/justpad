@@ -9,6 +9,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Search is about finging notes na dpulling them from the db
+// The search funciton in implemented in 3 layers:
+// 1. The searhc switch takes a selector and determins the approproate searching mode
+// 2. The given search mode function goes throguh each criteria of the selector, either additively or coherently, or sleectively adding notes to export list with the searching functions
+// 3. Is the get functions, each producing either a list of notes or a list of noteIDs(strings) based on some searhc criteria
+
+// TODO Make all get funcitons return a list of note IDs, then pull the notes at the end of search switch.
+
 func searchSwitch(s selector, db *sql.DB) []note {
 	switch s.mode {
 	case "hierarchy":

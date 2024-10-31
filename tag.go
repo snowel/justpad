@@ -105,6 +105,28 @@ func stringUnion(mutSlice *[]string, addSlice []string) {//TODO testing the ergo
 	}
 }
 
+// Takes the intersection of 2 tag or noteID slices
+func stringIntersect(as, bs []string) []string {
+	cs := make([]string, 0)
+	for _, v :=  range bs {
+		if slices.Contains(as, v) {
+			cs = append(cs, v)
+		}
+	}
+	return cs
+}
+
+// Takes the intersection of a variatic number of string slices
+func multiStringIntersect(s ...[]string) []string {
+	out := make([]string, len(s[0]))
+	copy(out, s[0])
+	for i, v :=  range s {
+		if i == 0 { continue }// Wasting one if check but cleaner to read TODO
+		stringIntersect(out, v)
+	}
+	return out
+}
+
 // TODO generics or generalization
 // Adds addSlice to mutSlice, without creating duplicates 
 func noteUnion(mutSlice, addSlice *[]note) {

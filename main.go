@@ -9,6 +9,21 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+
+// Welcome to the dnote/justpad source code!
+// At the head of each file, below the package and import statements, I try to include a set of comments describing the logic of the code,
+// as well as the architechture that should dictate future code.
+//
+// dnote's functionality is realitively simple:
+// 1. Create and read notes using an external editor
+// 2. Add tags, links, tree structure, metadata to those notes
+// 3. Manipulated and search those notes based on a list of selection criteria
+
+// The main function works as follows:
+// The flags parse the selection values, then they are structured in a struct for cleanliness.
+// The main switch/case sets off the approriate set of actions.
+
+
 func t() {
 	print("debug")
 }
@@ -89,7 +104,7 @@ func main() {
 	sortMode := flag.String("s", "", "Method by which to sort a list of notes.")
 	searchMode := flag.String("m", "hierarchy", "Method by which to sort a list of notes.")
 	pocket := flag.Bool("p", false, "Specifiy if the pocket is used for searching.")
-	clearPocket := flag.Bool("cp", false, "Clear the pocket before doing anything else.")
+	clearPocket := flag.Bool("cp", false, "Clear the pocket before formulating selection and executing command.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
 
 	flag.Parse()
@@ -138,17 +153,17 @@ func main() {
 		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 		printNoteList(n)
 		pushListToPocket(n, db)
-	case "edit":
+	case "edit", "ed"://single note
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		editNote(&n, *tagSep)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
-	case "delete":
+	case "delete", "d"://single note
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		removeNote(n.id, db)
-	case "delete-list":
+	case "delete-list", "dls":
 		n := searchSwitch(selector, db)
 		deleteNoteList(n, db)
 	case "tooltip":
