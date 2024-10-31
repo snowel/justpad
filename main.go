@@ -110,6 +110,26 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 
+	// Special case: initialize the database
+	if args[0] == "init-db" {
+		initDB(*dbPath)
+		return
+	}
+	
+	db := openDB(*dbPath)
+	defer db.Close()
+
+	// Selector preprocessor
+
+	// Clear the pocket
+	if *clearPocket { emptyPocket(db) }
+
+
+
+	// Rank implies pocket
+	if *rank != 0 {*pocket = true}
+
+	// Build the selector struct
 	selector := selector{
 			id: *id,
 			tags: *tags,
@@ -119,27 +139,12 @@ func main() {
 			pocket: *pocket,
 			rank: *rank, }
 
-	if *clearPocket {
-		db := openDB(*dbPath)
-		defer db.Close()
-		emptyPocket(db)
-	}
-
 	if len(args) == 0 { // quick note
-		db := openDB(*dbPath)
-		defer db.Close()
 		note := makeNote(*tags, *tagSep)
 		saveNewNote(&note, db)
 		pushNoteToPocket(note.id, db)
 		return
 	} // quick note
-
-	if args[0] == "init-db" {
-		initDB(*dbPath)
-	}
-
-	db := openDB(*dbPath)
-	defer db.Close()
 
 	// TODO add a split here for expresions returning a single note?... then we'd have to eval multiple times...
 	switch args[0] {
