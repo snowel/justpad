@@ -27,10 +27,10 @@ func merge(mergeList []note, sep, mergeMode string, db *sql.DB) note {
 		switch mergeMode {
 		case "all":
 			inheritLinks(newNote.id, v.id, db)
-		case "links":
-			inheritLinksFrom(newNote.id, v.id, db)
-		case "backlinks":
-			inheritLinksTo(newNote.id, v.id, db)
+		case "forward":
+			inheritForwardlinks(newNote.id, v.id, db)
+		case "back":
+			inheritBacklinks(newNote.id, v.id, db)
 		default:
 			continue
 		}

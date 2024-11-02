@@ -8,6 +8,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Dnote has note linking.
+// Links represent a 2 note rodered pair i.e. note A -> note B
+// Links that are outgoing are refered to as forwardlinks
+// Links that are incomming are refered to as backlinks
+
+
 func setLinkSwitch(cmd string, selectedNote note, db *sql.DB) {
 	activeNote := getActive(db)
 
@@ -17,12 +23,13 @@ func setLinkSwitch(cmd string, selectedNote note, db *sql.DB) {
 	}
 
 	switch cmd {
-	case "to":
-		setLink(selectedNote.id, activeNote.id, db)
-	case "from":
+	case "to", "back":
 		setLink(activeNote.id, selectedNote.id, db)
+	case "from", "forward":
+		setLink(selectedNote.id, activeNote.id, db)
 	}
 }
+
 func setLink(from, to string, db *sql.DB) {
 	_, err := db.Exec("INSERT INTO links SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM links WHERE start = ? AND end = ?);", from, to, from, to)
 	if err != nil {log.Fatal(err)}
@@ -40,7 +47,7 @@ func getLinkSwitch(cmd, noteID string, db *sql.DB) []note {
 		n := getLinksFrom(noteID, db)
 		stringUnion(&noteList, n)
 	default:
-		fmt.Println(cmd, " Is not a valid argument for list-links.")
+		fmt.Println(cmd, " is not a valid argument for list-links.")
 	}
 	return searchByIDs(noteList, db)
 }
@@ -91,16 +98,14 @@ func getLinksToActive(db *sql.DB) []note {
 
 // Give receivingNote a copy of all links from givingNote where receivingNote takes the role of givingNote
 func inheritLinks(receivingNote, givingNote string, db *sql.DB) {
-	// Inherit links to
-	inheritLinksTo(receivingNote, givingNote, db)
-	// Inherit links from
-	inheritLinksFrom(receivingNote, givingNote, db)
+	// Inherit links to the note
+	inheritBacklinks(receivingNote, givingNote, db)
+	// Inherit links from the note
+	inheritForwardlinks(receivingNote, givingNote, db)
 } 
 
-// TODO rename to/from links (can't keep track of this jazz!)
-// Links from note A -> A's Links
-// Links to note A -> A's backlinks
-func inheritLinksTo(receivingNote, givingNote string, db *sql.DB) {
+// Set links from all notes poiting to the givingNote to point to the receivingNote
+func inheritBacklinks(receivingNote, givingNote string, db *sql.DB) {
 	noteRows, err := db.Query("SELECT start FROM links WHERE end = ?", givingNote)
 	if err != nil { log.Fatal(err) }
 	defer noteRows.Close()
@@ -118,7 +123,7 @@ func inheritLinksTo(receivingNote, givingNote string, db *sql.DB) {
 	}
 } 
 
-func inheritLinksFrom(receivingNote, givingNote string, db *sql.DB) {
+func inheritForwardlinks(receivingNote, givingNote string, db *sql.DB) {
 	noteRows, err := db.Query("SELECT end FROM links WHERE start = ?", givingNote)
 	if err != nil { log.Fatal(err) }
 	defer noteRows.Close()

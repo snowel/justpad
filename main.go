@@ -23,11 +23,6 @@ import (
 // The flags parse the selection values, then they are structured in a struct for cleanliness.
 // The main switch/case sets off the approriate set of actions.
 
-
-func t() {
-	print("debug")
-}
-
 type note struct {
 	id string
 
@@ -111,7 +106,7 @@ func main() {
 	args := flag.Args()
 
 	// Special case: initialize the database
-	if args[0] == "init-db" {
+	if len(args) > 0 && args[0] == "init-db" {
 		initDB(*dbPath)
 		return
 	}
@@ -123,8 +118,6 @@ func main() {
 
 	// Clear the pocket
 	if *clearPocket { emptyPocket(db) }
-
-
 
 	// Rank implies pocket
 	if *rank != 0 {*pocket = true}
@@ -145,8 +138,7 @@ func main() {
 		pushNoteToPocket(note.id, db)
 		return
 	} // quick note
-
-	// TODO add a split here for expresions returning a single note?... then we'd have to eval multiple times...
+ 
 	switch args[0] {
 	case "new":
 		note := makeNote(*tags, *tagSep)
@@ -196,7 +188,5 @@ func main() {
 		mode := ""
 		if len(args) >= 2 {mode = args[1]}
 		merge(ns, "\n---\njustpad-merge\n---\n", mode, db)//TODO temp hardcoded the sep, eventually, will add optional extra arg
-	case "debug":
-		t()
 	}
 }
