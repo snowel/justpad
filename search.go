@@ -18,16 +18,29 @@ import (
 // TODO Make all get funcitons return a list of note IDs, then pull the notes at the end of search switch.
 
 func searchSwitch(s selector, db *sql.DB) []note {
-	switch s.mode {
+	noteList := make([]note, 0)
+	switch s.searchMode {
 	case "hierarchy":
-		return searchHierarchy(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
+		noteList = searchHierarchy(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	case "optional":
-		return searchOptional(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
+		noteList = searchOptional(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	case "combined":
-		return searchCombined(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
+		noteList = searchCombined(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	default:
-		return searchHierarchy(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
+		noteList = searchHierarchy(s.id, s.tags, s.links, s.active, s.pocket, s.rank, db)
 	}
+
+	// Post-process
+	if s.sortMode != "" {sortNotesMut(noteList, s.sortMode)}		
+	
+	if s.count != 0 && s.count > 0 {
+		if s.count >= len(noteList) {
+			log.Print("Count specified is greater than, or equal too, the output. All notes will be passed along.")
+		} else {
+		noteList = noteList[:s.count]
+		}
+	}
+	return noteList
 	
 }
 

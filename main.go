@@ -37,9 +37,9 @@ type note struct {
 }
 
 type selector struct {
-	id, tags, links, mode string
+	id, tags, links, searchMode, sortMode string
 	active, pocket bool
-	rank int
+	rank, count int
 }
 
 func emptyNote() note {
@@ -102,6 +102,7 @@ func main() {
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before formulating selection and executing command.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
 	rankOne := flag.Bool("R", false, "Alias for selecting rank 1. Equivalent to writing: '-r 1'")
+	count := flag.Int("c", 0, "Specify the maximum number of notes you want to select.")
 
 	flag.Parse()
 	args := flag.Args()
@@ -134,9 +135,11 @@ func main() {
 			tags: *tags,
 			links: *links,
 			active: *active,
-			mode: *searchMode,
+			searchMode: *searchMode,
 			pocket: *pocket,
-			rank: *rank, }
+			count: *count,
+			rank: *rank,
+			sortMode: *sortMode, }
 
 	// Quick note
 	if len(args) == 0 {
@@ -155,7 +158,6 @@ func main() {
 		return
 	case "list", "ls":
 		n := searchSwitch(selector, db)
-		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 		printNoteList(n)
 		pushListToPocket(n, db)
 	case "edit", "ed":
