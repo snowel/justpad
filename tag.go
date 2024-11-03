@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"time"
 	"fmt"
 	"slices"
 
@@ -51,6 +52,15 @@ func validateTags(tags string) []string {
 }
 
 // --- functions for combining UI funcitons related to tags
+
+// Edit a note's tags without editing the note
+func editTags(n *note) {
+	modTime := time.Now().Unix()
+	n.modified = modTime
+	t := createTextEditor(strings.Join(n.tags, " "))
+	n.tags = validateTags(t)
+	return
+}
  
 // TODO refactor getting a single valid tag to a filter function
 func editTooltip(tag string, db *sql.DB) {

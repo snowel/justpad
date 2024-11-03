@@ -164,6 +164,12 @@ func main() {
 		editNote(&n, *tagSep)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
+	case "edit-tags", "edt":
+		ns := searchSwitch(selector, db)
+		n := filterSingle(ns)
+		editTags(&n)
+		saveNoteUpdate(&n, db)
+		pushNoteToPocket(n.id, db)
 	case "delete", "d":
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
