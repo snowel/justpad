@@ -101,6 +101,7 @@ func main() {
 	pocket := flag.Bool("p", false, "Specifiy if the pocket is used for searching.")
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before formulating selection and executing command.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
+	rankOne := flag.Bool("R", false, "Alias for selecting rank 1. Equivalent to writing: '-r 1'")
 
 	flag.Parse()
 	args := flag.Args()
@@ -110,14 +111,19 @@ func main() {
 		initDB(*dbPath)
 		return
 	}
-	
+
+	// Open the database
 	db := openDB(*dbPath)
 	defer db.Close()
 
 	// Selector preprocessor
+	// These functions alter the selection flags input based on other flags
 
 	// Clear the pocket
-	if *clearPocket { emptyPocket(db) }
+	if *clearPocket {emptyPocket(db)}
+
+	// Rank 1 alias
+	if *rankOne {*rank = 1}
 
 	// Rank implies pocket
 	if *rank != 0 {*pocket = true}
@@ -132,13 +138,15 @@ func main() {
 			pocket: *pocket,
 			rank: *rank, }
 
-	if len(args) == 0 { // quick note
+	// Quick note
+	if len(args) == 0 {
 		note := makeNote(*tags, *tagSep)
 		saveNewNote(&note, db)
 		pushNoteToPocket(note.id, db)
 		return
-	} // quick note
+	}
  
+	// Main switch case
 	switch args[0] {
 	case "new":
 		note := makeNote(*tags, *tagSep)
@@ -150,13 +158,13 @@ func main() {
 		if *sortMode != "" {sortNotesMut(n, *sortMode)}		
 		printNoteList(n)
 		pushListToPocket(n, db)
-	case "edit", "ed"://single note
+	case "edit", "ed":
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		editNote(&n, *tagSep)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
-	case "delete", "d"://single note
+	case "delete", "d":
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		removeNote(n.id, db)
@@ -165,7 +173,7 @@ func main() {
 		deleteNoteList(n, db)
 	case "tooltip":
 		editTooltip(*tags, db)	 
-	case "set":// requires a single note
+	case "set", "set-active":
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setActive(n.id, db)
@@ -186,7 +194,7 @@ func main() {
 	// TODO add funciton to check for len of args
 		ns := searchSwitch(selector, db)
 		mode := ""
-		if len(args) >= 2 {mode = args[1]}
+		if len(args) >= 2 {mode = args[1]} // arg is optional
 		merge(ns, "\n---\njustpad-merge\n---\n", mode, db)//TODO temp hardcoded the sep, eventually, will add optional extra arg
 	}
 }
