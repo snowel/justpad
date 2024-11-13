@@ -95,6 +95,7 @@ func main() {
 	links := flag.String("lk", "", "Use links from/to the active note as a selector.")
 	tags := flag.String("t", "", "A list of tags.")
 	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
+	tagActive := flag.Bool("ta", false, "If the user wants to overide the t flag value witht he tags of the active note.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
 	sortMode := flag.String("s", "", "Method by which to sort a list of notes.")
 	searchMode := flag.String("m", "hierarchy", "Method by which to sort a list of notes.")
@@ -128,6 +129,13 @@ func main() {
 
 	// Rank implies pocket
 	if *rank != 0 {*pocket = true}
+
+	//Tags of Active
+	if *tagActive {
+		n := getActive(db)		 
+		overideTags := searchForTags(n.id, db)
+		*tags = strings.Join(overideTags, " ")//TODO Another case we are joinnig the array that will be split into an array... All for simplicities sake.
+	}
 
 	// Build the selector struct
 	selector := selector{
@@ -163,6 +171,8 @@ func main() {
 	case "edit", "ed":
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
+		// TODO fintering single notes could be integrated into the post procssing in search switch, adding a simple bool to the func args
+		// But maybe it's cleanre this way
 		editNote(&n, *tagSep)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)

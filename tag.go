@@ -5,6 +5,7 @@ import (
 	"time"
 	"fmt"
 	"slices"
+	"log"
 
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -51,6 +52,26 @@ func validateTags(tags string) []string {
 	return all
 }
 
+// For a note ID, give the list of tags it is tagged with in the databasse
+func searchForTags(id string, db *sql.DB) []string {
+	taggedRows, err := db.Query("SELECT tag FROM tagged WHERE note = ?", id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer taggedRows.Close()
+
+	list := make([]string, 0)
+
+	for taggedRows.Next() {
+		
+		var tag string
+		if err := taggedRows.Scan(&tag); err != nil {
+			log.Print(err)
+		}
+		list = append(list, tag)
+	}
+	return list
+}
 // --- functions for combining UI funcitons related to tags
 
 // Edit a note's tags without editing the note

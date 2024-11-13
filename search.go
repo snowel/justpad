@@ -31,8 +31,11 @@ func searchSwitch(s selector, db *sql.DB) []note {
 	}
 
 	// Post-process
+	
+	// Sort
 	if s.sortMode != "" {sortNotesMut(noteList, s.sortMode)}		
 	
+	// Count
 	if s.count != 0 && s.count > 0 {
 		if s.count >= len(noteList) {
 			log.Print("Count specified is greater than, or equal too, the output. All notes will be passed along.")
@@ -90,7 +93,10 @@ func searchCombined(id, tags, links string, active, pocket bool, rank int, db *s
 	if pocket {
 		if rank != 0 {
 			singleNote := searchSinglePocket(rank, db)
-			n := make([]note, 1) // TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+			n := make([]note, 1) 
+			// TODO this feels extremely bad, knowing that I will later be filtering the slice to just return the single note...
+			// A potential "fix" is with the -cs/-C/pre-sorting count flag. If I create a flag that will prevent the searching of too many notes,
+			// Commands that take only 1 note can overwrite -C/cs to be 1, then the funcitnoallity of the flag will prevent watsted work... sort of
 			n[0] = singleNote
 			if firstNoteFlag {
 				ns = n
@@ -256,26 +262,6 @@ func searchByTags(tags []string, db *sql.DB) []note {
 	return searchByIDs(list, db)
 }
 
-// For a note ID, give the list of tags it is tagged with in the databasse
-func searchForTags(id string, db *sql.DB) []string {
-	taggedRows, err := db.Query("SELECT tag FROM tagged WHERE note = ?", id)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer taggedRows.Close()
-
-	list := make([]string, 0)
-
-	for taggedRows.Next() {
-		
-		var tag string
-		if err := taggedRows.Scan(&tag); err != nil {
-			log.Print(err)
-		}
-		list = append(list, tag)
-	}
-	return list
-}
 
 // for commands that require a single note
 func filterSingle(ns []note) note {
