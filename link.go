@@ -52,7 +52,7 @@ func getLinkSwitch(cmd, noteID string, db *sql.DB) []note {
 	return searchByIDs(noteList, db)
 }
 
-// gets list of IDs of all notes liked to by the selected note
+// gets list of IDs of all notes linked to by the selected note
 func getLinksFrom(noteID string, db *sql.DB) []string {
 	noteRows, err := db.Query("SELECT end FROM links WHERE start = ?", noteID)
 	if err != nil { log.Fatal(err) }

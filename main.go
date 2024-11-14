@@ -104,6 +104,7 @@ func main() {
 	rank := flag.Int("r", 0, "Specify the rank of the.")
 	rankOne := flag.Bool("R", false, "Alias for selecting rank 1. Equivalent to writing: '-r 1'")
 	count := flag.Int("c", 0, "Specify the maximum number of notes you want to select.")
+	displayFormat := flag.String("f", "", "Format in which notes are printed to output.")
 
 	flag.Parse()
 	args := flag.Args()
@@ -166,7 +167,7 @@ func main() {
 		return
 	case "list", "ls":
 		n := searchSwitch(selector, db)
-		printNoteList(n)
+		printNoteList(n, *displayFormat, db)
 		pushListToPocket(n, db)
 	case "edit", "ed":
 		ns := searchSwitch(selector, db)
@@ -206,7 +207,7 @@ func main() {
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		ns = getLinkSwitch(args[1], n.id, db)
-		printNoteList(ns)
+		printNoteList(ns, *displayFormat, db)
 		pushListToPocket(ns, db)
 	case "merge": // 2 arg command
 	// TODO add funciton to check for len of args
