@@ -17,10 +17,10 @@ func printSwitch(n *note, mode string, db *sql.DB) {
 		case "simple", "s":
 			printNoteSimple(n)
 		case "links-in":// Prints indetn notes which are linked to the given note and included within the search
-		case "links":// Prints all
+		case "links", "l":// Prints all
 			printNoteWithLinks(n, db)
 		case "for-links":// INTERNAL USE -- Used by the formating function to print the indented list --
-			printNoteWithIndent(n, "|________", "", "|       ")
+			printNoteWithIndent(n, "|----------", "", "|       ")
 		default:
 			printNote(n)
 	}
@@ -30,20 +30,16 @@ func printSwitch(n *note, mode string, db *sql.DB) {
 func printNote(n *note) {
 	fmt.Println(n.id)
 	fmt.Println("Created: ", time.Unix(n.created, 0).String(), "Modified: ", time.Unix(n.modified, 0).String())
-	fmt.Println(":: note ::")
+	fmt.Println(n.tags, "\n")
 	fmt.Println(n.body)
-	fmt.Println(":: end ::")
-	fmt.Println("Tagged with:", n.tags)
 }
 
 func printNoteWithIndent(n *note, head, foot, indent string) {
-	if head != "" {fmt.Println(head)}
-	fmt.Println(indent, n.id)
+	fmt.Println(head, n.id)
 	fmt.Println(indent, "Created: ", time.Unix(n.created, 0).String(), "Modified: ", time.Unix(n.modified, 0).String())
-	fmt.Println(indent, ":: note ::")
+	fmt.Println(indent, n.tags)//TODO Lots of tags wont indent properly
+	fmt.Println(indent)//TODO Lots of tags wont indent properly
 	fmt.Println(indent, strings.ReplaceAll(n.body, "\n", "\n" + indent))
-	fmt.Println(indent, ":: end ::")
-	fmt.Println(indent, "Tagged with:", n.tags)
 	if foot != "" {fmt.Println(foot)}
 }
 
@@ -57,6 +53,7 @@ func printNoteWithLinks(n *note, db *sql.DB) {
 	printNote(n)
 	ns := getLinkSwitch("from", n.id, db)
 	printNoteListClean(ns, "for-links", db)
+	fmt.Println("")
 }
 
 
