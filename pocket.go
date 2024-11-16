@@ -93,11 +93,12 @@ func searchFullPocket(db *sql.DB) []note {
 
 func searchSinglePocket(rank int, db *sql.DB) note {
 	list := getPocket(db)
+	print(len(list))
 	if len(list) >= rank {
 		return searchByID(list[rank - 1], db)
 	}
 
-	log.Print("Rank is greater than length of pocket.")
+	log.Fatal("Rank is greater than length of pocket.")// TODO - This was originally left as a non-fatal log... but I don't remeber why? Was it left to allow searching up-to the max rank? When rank was supposed t hebace somewhat like count?
 	var n note
 	return n
 }
