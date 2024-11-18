@@ -44,7 +44,6 @@ func printNoteWithIndent(n *note, head, foot, indent string) {
 }
 
 func printNoteSimple(n *note) {
-	fmt.Println(n.id, "Modified: ", time.Unix(n.modified, 0).String(), strings.Join(n.tags, " "))
 	fmt.Println(n.body)
 }
 
