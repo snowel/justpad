@@ -98,7 +98,9 @@ func searchSinglePocket(rank int, db *sql.DB) note {
 		return searchByID(list[rank - 1], db)
 	}
 
-	log.Fatal("Rank is greater than length of pocket.")// TODO - This was originally left as a non-fatal log... but I don't remeber why? Was it left to allow searching up-to the max rank? When rank was supposed t hebace somewhat like count?
+	log.Fatal("Rank is greater than length of pocket.")
+	// TODO This was left as non fatal to keep combined searching from being stopped by it...
+	// There are simple fixes, but doesn't seem worth it. SIMPLICITY IS GOOD.
 	var n note
 	return n
 }

@@ -16,7 +16,7 @@ import (
 // 3. Is the get functions, each producing either a list of notes or a list of noteIDs(strings) based on some searhc criteria
 
 // TODO Make all get funcitons return a list of note IDs, then pull the notes at the end of search switch.
-
+// TODO how about make search swithc encompase the flilter?, return (note, []note) and then have the variou funtions just write only the other?
 func searchSwitch(s selector, db *sql.DB) []note {
 	noteList := make([]note, 0)
 	switch s.searchMode {

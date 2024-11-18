@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/oklog/ulid/v2"
 	"time"
+	"fmt"
 	"flag"
 	"strings"
 	"database/sql"
@@ -196,13 +197,27 @@ func main() {
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setActive(n.id, db)
-	case "clear":
+	case "clear", "clear-active", "ca":
 		clearActive(db)
 	case "set-link", "sl": // 2 arg command 
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
 		setLinkSwitch(args[1], n, db)
 		//TODO pocket?
+	case "set-link-rank", "slr":
+		p := getPocket(db)
+		if len(p) < 2 {
+			fmt.Println("set-link-rank requires your pocket to have at least 2 notes.")
+			return
+		}
+		setLink(p[0], p[1], db)
+	case "set-link-rank-reversed", "slrr":
+		p := getPocket(db)
+		if len(p) < 2 {
+			fmt.Println("set-link-rank-reversed requires your pocket to have at least 2 notes.")
+			return
+		}
+		setLink(p[1], p[0], db)
 	case "list-links", "lsl": // 2 arg command
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
