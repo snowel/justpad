@@ -50,36 +50,30 @@ func emptyNote() note {
 }
 
 // Make note from CMD
-func makeNote(tags string, tagSeperate bool) note {
+func makeNote(tags string, tagSeperate bool, tagEditMode string) note {
 	mkTime := time.Now().Unix()
 	text := createTextEditor("")
-	var t string
-	if tagSeperate {
-		t = createTextEditor(tags)
-	} else {
-		t = tags
-	}
-	return note{
+	n := note{
 							id: ulid.Make().String(),
 							created: mkTime,
 							modified: mkTime,
 							body: string(text),
-							tags: validateTags(t)} 
+							tags: validateTags(tags)} 
+	if tagSeperate {
+		switchEditTags(&n, tagEditMode)
+	}
+
+	return n
 }
 
 // Edit a note
-func editNote(n *note, tagSeperate bool) {
+func editNote(n *note, tagMode string) {
 
 	text := createTextEditor(n.body)
 	modTime := time.Now().Unix()
 	n.modified = modTime
 	n.body = text
-	var t string
-	if tagSeperate {
-		t = createTextEditor(strings.Join(n.tags, " "))
-		n.tags = validateTags(t)
-	}
-
+	switchEditTags(n, tagMode)
 	return
 }
 
@@ -95,7 +89,9 @@ func main() {
 	active := flag.Bool("a", false, "Refers to the stored active note, if there is one.")
 	links := flag.String("lk", "", "Use links from/to the active note as a selector.")
 	tags := flag.String("t", "", "A list of tags.")
+	tagEditMode := flag.String("tem", "normal", "An option for editing tags.")
 	tagSep := flag.Bool("ts", false, "If the user wants to edit tags seperately.")
+	tagSepNew := flag.Bool("tsn", false, "Shorthand for -ts and -tem newline.")
 	tagActive := flag.Bool("ta", false, "If the user wants to overide the t flag value witht he tags of the active note.")
 	dbPath := flag.String("db", "", "Path to the database being used.")
 	sortMode := flag.String("s", "", "Method by which to sort a list of notes.")
@@ -103,7 +99,7 @@ func main() {
 	pocket := flag.Bool("p", false, "Specifiy if the pocket is used for searching.")
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before formulating selection and executing command.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
-	rankOne := flag.Bool("R", false, "Alias for selecting rank 1. Equivalent to writing: '-r 1'")
+	rankOne := flag.Bool("R", false, "Alias for selecting rank 1. Shorhand for '-r 1'")
 	count := flag.Int("c", 0, "Specify the maximum number of notes you want to select.")
 	displayFormat := flag.String("f", "", "Format in which notes are printed to output.")
 
@@ -126,6 +122,14 @@ func main() {
 	// Clear the pocket
 	if *clearPocket {emptyPocket(db)}
 
+	// SHORTHANDS
+
+	// TS + newline mode alias
+	if *tagSepNew {
+		*tagEditMode = "newline"
+		*tagSep = true
+	}
+
 	// Rank 1 alias
 	if *rankOne {*rank = 1}
 
@@ -134,7 +138,7 @@ func main() {
 
 	//Tags of Active
 	if *tagActive {
-		n := getActive(db)		 
+		n := getActive(db)
 		overideTags := searchForTags(n.id, db)
 		*tags = strings.Join(overideTags, " ")//TODO Another case we are joinnig the array that will be split into an array... All for simplicities sake.
 	}
@@ -153,7 +157,7 @@ func main() {
 
 	// Quick note
 	if len(args) == 0 {
-		note := makeNote(*tags, *tagSep)
+		note := makeNote(*tags, *tagSep, *tagEditMode)
 		saveNewNote(&note, db)
 		pushNoteToPocket(note.id, db)
 		return
@@ -162,7 +166,7 @@ func main() {
 	// Main switch case
 	switch args[0] {
 	case "new":
-		note := makeNote(*tags, *tagSep)
+		note := makeNote(*tags, *tagSep, *tagEditMode)
 		saveNewNote(&note, db)
 		pushNoteToPocket(note.id, db)
 		return
@@ -175,13 +179,13 @@ func main() {
 		n := filterSingle(ns)
 		// TODO fintering single notes could be integrated into the post procssing in search switch, adding a simple bool to the func args
 		// But maybe it's cleanre this way
-		editNote(&n, *tagSep)
+		editNote(&n, *tagEditMode)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
 	case "edit-tags", "edt":
 		ns := searchSwitch(selector, db)
 		n := filterSingle(ns)
-		editTags(&n)
+		switchEditTags(&n, *tagEditMode)
 		saveNoteUpdate(&n, db)
 		pushNoteToPocket(n.id, db)
 	case "delete", "d":

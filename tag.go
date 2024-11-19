@@ -74,7 +74,19 @@ func searchForTags(id string, db *sql.DB) []string {
 }
 // --- functions for combining UI funcitons related to tags
 
-// Edit a note's tags without editing the note
+// Edit a note's tags
+func switchEditTags(n *note, mode string) {
+	switch mode {
+	case "normal":
+		editTags(n)
+	case "newline":
+		editTagsAsNewline(n)
+	default:
+		fmt.Println(mode, " is not a tag editing format.")
+	}
+}
+
+// TODO move the od time editor + validate tags to the swtich... unless I'm planing to have interactive in there... which, probably
 func editTags(n *note) {
 	modTime := time.Now().Unix()
 	n.modified = modTime
@@ -82,7 +94,20 @@ func editTags(n *note) {
 	n.tags = validateTags(t)
 	return
 }
- 
+
+// Process for newline editing
+func editTagsAsNewline(n *note) {
+	modTime := time.Now().Unix()
+	n.modified = modTime
+	t := createTextEditor(strings.Join(n.tags, "\n"))
+	t = strings.ReplaceAll(t, " ", "_")
+	t = strings.ReplaceAll(t, "\n", " ")
+	for strings.Contains(t, "  ") { t = strings.ReplaceAll(t, "  ", " ") }
+	n.tags = validateTags(t)
+	return
+
+}
+
 // TODO refactor getting a single valid tag to a filter function
 func editTooltip(tag string, db *sql.DB) {
 	if tag == "" {
