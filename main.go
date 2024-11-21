@@ -100,6 +100,7 @@ func main() {
 	clearPocket := flag.Bool("cp", false, "Clear the pocket before formulating selection and executing command.")
 	rank := flag.Int("r", 0, "Specify the rank of the.")
 	rankOne := flag.Bool("R", false, "Alias for selecting rank 1. Shorhand for '-r 1'")
+	countOne := flag.Bool("C", false, "Alias for selecting count 1. Shorhand for '-c 1'")
 	count := flag.Int("c", 0, "Specify the maximum number of notes you want to select.")
 	displayFormat := flag.String("f", "", "Format in which notes are printed to output.")
 
@@ -132,6 +133,9 @@ func main() {
 
 	// Rank 1 alias
 	if *rankOne {*rank = 1}
+
+	// Count 1 alias
+	if *countOne {*count = 1}
 
 	// Rank implies pocket
 	if *rank != 0 {*pocket = true}
